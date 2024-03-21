@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Server Room Monitoring</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+      body {
+        font-family: "Poppins", sans-serif;
+        font-weight: 800;
+        font-style: normal;
+        margin: 0;
+        padding: 0;
+        background-color: #d0ccd0;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 10px 30px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .container h1 {
+        font-size: 35px;
+        font-weight: bold;
+        font-style: italic;
+      }
+
+      .flex-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .status-container,
+      .temperature-container {
+        width: 70%;
+        margin-bottom: 10px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 400;
+      }
+
+      .status-indicator {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-top: 10px;
+      }
+
+      .temperature {
+        font-size: 24px;
+        margin-top: 10px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      button {
+        padding: 10px 20px;
+        margin-top: 20px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>SERVER ROOM MONITORING DASHBOARD</h1>
+
+      <div class="flex-container">
+        <div class="status-container">
+          <h2>STATUS:</h2>
+          <div class="status-indicator" id="statusIndicator"></div>
+        </div>
+
+        <div class="temperature-container">
+          <h2>TEMPERATURE:</h2>
+          <div class="temperature" id="temperature"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    let temperatureData = 0;
+    let statusLED = 0;
+
+    function celsiusToFahrenheit(celsius) {
+      return (celsius * 9) / 5 + 32;
+    }
+
+    function celsiusToReamur(celsius) {
+      return celsius * 0.8;
+    }
+
+    function celsiusToKelvin(celsius) {
+      return celsius + 273.15;
+    }
+
+    function fetchData() {
+      fetch(`https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_READ_API_KEY}&results=1`)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data); 
+          const temperature = data.feeds[0].field1;
+          temperatureData = parseFloat(temperature);
+          if (temperatureData < 30) {
+            statusLED = 0;
+          } else if (temperatureData >= 30 && temperatureData <= 36) {
+            statusLED = 1;
+          } else {
+            statusLED = 2;
+          }
+          updateDashboard();
+        })
+        .catch((error) => console.error("Error fetching data:", error));
+    }
+
+    function updateDashboard() {
+      const statusIndicator = document.getElementById("statusIndicator");
+      const temperatureDisplay = document.getElementById("temperature");
+
+      switch (statusLED) {
+        case 0:
+          statusIndicator.style.backgroundColor = "green";
+          break;
+        case 1:
+          statusIndicator.style.backgroundColor = "yellow";
+          break;
+        case 2:
+          statusIndicator.style.backgroundColor = "red";
+          break;
+      }
+
+    const celsius = temperatureData;
+    const fahrenheit = celsiusToFahrenheit(celsius);
+    const reamur = celsiusToReamur(celsius);
+    const kelvin = celsiusToKelvin(celsius);
+
+    temperatureDisplay.innerHTML = `
+      <div class="temperature" id="temperature">
+        <table>
+          <tr>
+            <th>Celsius (°C)</th>
+            <th>Fahrenheit (°F)</th>
+            <th>Reamur (°R)</th>
+            <th>Kelvin (K)</th>
+          </tr>
+          <tr>
+            <td>${celsius.toFixed(2)} °C</td>
+            <td>${fahrenheit.toFixed(2)} °F</td>
+            <td>${reamur.toFixed(2)} °R</td>
+            <td>${kelvin.toFixed(2)} °K</td>
+          </tr>
+        </table>
+      </div>`;
+    }
+
+
+    const THINGSPEAK_CHANNEL_ID = "2479774";
+    const THINGSPEAK_READ_API_KEY = "ZPLDWC9AZYOFA43P";
+    const REFRESH_INTERVAL = 15000;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchData();
+    });
+
+    setInterval(fetchData, REFRESH_INTERVAL);
+    setInterval(function () {
+      location.reload();
+    }, 5000);
+    </script>
+  </body>
+</html>
