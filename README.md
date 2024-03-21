@@ -25,10 +25,13 @@ Monitoring suhu menggunakan DHT11 sebagai alat untuk mendeteksi Suhu dan ThingSp
 3. Buzzer x1
 4. Resistor x3
 5. DHT11 x1
-6. Kabel x6
+6. Kabel Jumper x5
 
 ## Board Schematic
-![Board Schematic]()
+![Board Schematic](https://github.com/MaulanaASetiawan/posttest3-praktikum-iot-unmul/blob/main/Schematic.png)
+
+## Our Schematic
+![Our Schematic](https://github.com/MaulanaASetiawan/posttest3-praktikum-iot-unmul/blob/main/OurSchematic.jpg)
 
 ## Lampiran
 [LINK YOUTUBE](https://youtu.be/NUaVM6xujDQ)
